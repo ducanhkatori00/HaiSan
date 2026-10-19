@@ -1,0 +1,10 @@
+import { existsSync } from 'node:fs';
+import { loadEnvFile } from 'node:process';
+import { createDatabase } from './supabase.js';
+import { createStore } from './store.js';
+import { createApp } from './app.js';
+if (existsSync('.env')) loadEnvFile('.env');
+const database = createDatabase({ url: process.env.SUPABASE_URL, key: process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY });
+if (!process.env.ADMIN_TOKEN || process.env.ADMIN_TOKEN.length < 32) throw new Error('ADMIN_TOKEN cần ít nhất 32 ký tự.');
+const port = process.env.PORT || 3001;
+createApp({ store: createStore(database), adminToken: process.env.ADMIN_TOKEN }).listen(port, process.env.HOST || '127.0.0.1', () => console.log(`Hoàng Huy: http://localhost:${port}`));

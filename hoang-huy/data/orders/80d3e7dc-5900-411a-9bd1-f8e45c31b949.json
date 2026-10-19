@@ -1,0 +1,18 @@
+{
+  "name": "Khach kiem thu",
+  "phone": "0900000000",
+  "address": "Dia chi kiem thu, khong giao hang",
+  "note": "",
+  "items": [
+    {
+      "id": "tom-su",
+      "name": "Tôm sú",
+      "quantity": 2,
+      "price": 320000
+    }
+  ],
+  "total": 640000,
+  "id": "80d3e7dc-5900-411a-9bd1-f8e45c31b949",
+  "createdAt": "2026-10-11T01:50:43.348Z",
+  "status": "demo"
+}
