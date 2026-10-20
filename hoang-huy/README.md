@@ -4,12 +4,13 @@ React + Vite → Node.js + Express → Supabase PostgreSQL (Data API).
 
 Ứng dụng không dùng WordPress hoặc PHP. React hiển thị cửa hàng, tìm kiếm,
 lọc sản phẩm, giỏ hàng và quản trị. Tất cả thao tác dữ liệu đi qua API Express
-trong `server/app.js`; `src/api.js` tập trung kết nối và xử lý lỗi cho UI.
+trong `server/app.js`; `src/api/client.js` tập trung kết nối và xử lý lỗi cho UI.
 Giao diện dùng tông xanh biển, hỗ trợ màn hình điện thoại và desktop.
 
 `VITE_API_BASE_URL` mặc định là `/api`. Khi phát triển, Vite proxy đường dẫn
-này sang Node.js cổng 3001; khi production, Express phục vụ cả React đã build
-và API trên cùng origin. Nếu dùng reverse proxy, giữ định tuyến `/api` về Node.js.
+này sang Node.js cổng 3001. Frontend React được phục vụ độc lập bởi Vite
+khi phát triển và static hosting khi production. Reverse proxy chuyển
+`/api` về Node.js và các URL giao diện về `dist/index.html`.
 
 ## Thiết lập
 
@@ -33,10 +34,17 @@ Mở **Admin**, nhập `ADMIN_TOKEN` và nhấn đăng nhập để quản lý s
 ```sh
 npm test
 npm run build
-npm start
+npm run preview:full
 ```
 
-Express phục vụ giao diện đã build cùng API. Đặt `HOST=0.0.0.0` khi triển khai container; cấu hình `PORT` theo nhà cung cấp.
+Xem bản build tại http://127.0.0.1:4173 bằng `npm run preview:full`.
+`npm start` hoặc `npm run start:api` chỉ khởi động backend API tại cổng 3001.
+Chạy riêng frontend bằng `npm run dev:ui`, backend bằng `npm run dev:api`.
+
+Khi production, deploy `dist/` lên static hosting có SPA fallback về
+`index.html`; định tuyến `/api` qua reverse proxy tới backend Node.js.
+Vite preview chỉ dùng kiểm tra bản build trên máy. Đặt `HOST=0.0.0.0` khi
+triển khai container backend; cấu hình `PORT` theo nhà cung cấp.
 
 ## API
 
@@ -78,10 +86,83 @@ Các kiểm thử database dùng mock Data API, không yêu cầu khóa thật. 
 | `/huong-dan` | Hướng dẫn đặt hàng | `src/pages/GuidePage.jsx` |
 | `/gio-hang` | Giỏ hàng | `src/pages/CartPage.jsx` |
 | `/thanh-toan` | Thông tin giao hàng | `src/pages/CheckoutPage.jsx` |
-| `/admin` | Quản trị sản phẩm và đơn hàng | `src/pages/AdminPage.jsx` |
+| `/admin` | Quản trị sản phẩm và đơn hàng | `src/admin/AdminApp.jsx` |
 
 `src/App.jsx` ánh xạ URL đến trang; `src/router.jsx` xử lý History API,
 Back/Forward và liên kết chuyển trang. `src/components/Layout.jsx` dùng chung
 header, menu và footer. `src/context/ShopContext.jsx` giữ giỏ hàng xuyên suốt
-các trang và lưu vào localStorage. Express đã trả `dist/index.html` cho URL
-giao diện, nên mở trực tiếp hoặc tải lại từng trang vẫn hoạt động.
+các trang và lưu vào localStorage. Vite phục vụ SPA fallback khi dev/preview;
+static hosting production cần cấu hình fallback về `index.html` để mở trực
+tiếp hoặc tải lại URL giao diện.
+
+## Mã nguồn Admin
+
+Admin có module React riêng trong `src/admin/`, dùng chung Vite và backend
+Node.js của dự án. Chạy `npm run dev` tại `hoang-huy` để mở cả cửa hàng và admin.
+
+```text
+src/admin/
+  AdminApp.jsx               # Route và kiểm tra phiên đăng nhập
+  style.css                  # Giao diện quản trị
+  components/AdminLayout.jsx # Sidebar và layout
+  context/AdminContext.jsx   # Phiên đăng nhập và dữ liệu quản trị
+  api/                       # API sản phẩm và đơn hàng quản trị
+  pages/
+    LoginPage.jsx
+    DashboardPage.jsx
+    ProductsPage.jsx
+    OrdersPage.jsx
+```
+
+- `/admin`: tổng quan sản phẩm, đơn hàng, đơn chờ và giá trị đơn hoàn tất.
+- `/admin/products`: chỉnh sửa thông tin và giá sản phẩm.
+- `/admin/orders`: quản lý trạng thái và ghi chú đơn hàng.
+
+Chưa đăng nhập sẽ thấy form nhập `ADMIN_TOKEN` tại các URL admin. Token chỉ
+nằm trong bộ nhớ React, được giữ khi chuyển giữa các trang admin và xóa khi
+đăng xuất, tải lại trang hoặc rời khu vực admin. Backend vẫn xác thực từng
+request; không có secret được đưa vào mã nguồn frontend.
+
+## Cấu trúc API
+
+```text
+src/
+  admin/                     # UI và logic quản trị
+    api/products.js
+    api/orders.js
+    pages/
+    components/
+    context/
+  api/
+    client.js                # HTTP client và xử lý lỗi dùng chung
+    products/index.js        # API sản phẩm cửa hàng
+    orders/index.js          # API đặt hàng
+server/
+  app.js                     # Ghép middleware và API, không phục vụ page
+  api/
+    index.js                 # Ghép các nhóm API
+    health/                  # controller.js + routes.js
+    products/                # controller.js + routes.js
+    orders/                  # controller.js + routes.js
+    admin/
+      routes.js              # Xác thực chung cho /api/admin
+      products/              # controller.js + routes.js
+      orders/                # controller.js + routes.js
+  middleware/
+    admin-auth.js            # Kiểm tra token quản trị
+    async-handler.js         # Chuyển lỗi async về Express
+```
+
+Các module API nhận store qua tham số; `server/store.js` tiếp tục phụ trách
+truy cập dữ liệu và kiểm tra thay đổi sản phẩm, trạng thái đơn hàng.
+
+## Tách frontend và backend
+
+Toàn bộ page là React component trong `src/pages` và `src/admin/pages`.
+Express chỉ chạy trong `server/`; không render HTML hoặc phục vụ tài nguyên
+frontend. `src/api/client.js` kết nối qua HTTP, không import mã backend.
+
+- UI development: `npm run dev:ui` — cổng 5173.
+- API development: `npm run dev:api` — cổng 3001.
+- Chạy cả hai: `npm run dev`.
+- Xem React build kèm API trên máy: `npm run build` rồi `npm run preview:full`.

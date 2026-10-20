@@ -1,11 +1,11 @@
 import React,{createContext,useContext,useEffect,useMemo,useState} from 'react';
-import {api} from '../api.js';
+import {productsApi} from '../api/products/index.js';
 const ShopContext=createContext(null);
 export const useShop=()=>useContext(ShopContext);
 export function ShopProvider({children}){
 const [products,setProducts]=useState([]),[load,setLoad]=useState('loading'),[toast,setToast]=useState(''),[receipt,setReceipt]=useState(null);
  const [cart,setCart]=useState(()=>{try{const c=JSON.parse(localStorage.getItem('hh-cart'));return c&&typeof c==='object'&&!Array.isArray(c)?Object.fromEntries(Object.entries(c).filter(([k,v])=>typeof k==='string'&&Number.isInteger(v)&&v>0&&v<=50)):{};}catch{return {};} });
- async function fetchProducts(){setLoad('loading');try{setProducts(await api.products());setLoad('done');}catch{setLoad('error');}}
+ async function fetchProducts(){setLoad('loading');try{setProducts(await productsApi.list());setLoad('done');}catch{setLoad('error');}}
 useEffect(()=>{fetchProducts();},[]);
  useEffect(()=>{try{localStorage.setItem('hh-cart',JSON.stringify(cart));}catch{}},[cart]);
  useEffect(()=>{if(!toast)return;const t=setTimeout(()=>setToast(''),2500);return ()=>clearTimeout(t);},[toast]);
