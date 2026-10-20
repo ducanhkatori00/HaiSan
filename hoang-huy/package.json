@@ -1,14 +1,18 @@
-
 {
   "name": "hoang-huy-seafood",
   "version": "1.0.0",
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "concurrently -k \"node --watch server/index.js\" \"vite --host 127.0.0.1\"",
+    "dev": "concurrently -k \"npm run dev:api\" \"npm run dev:ui\"",
     "build": "vite build",
-    "start": "node server/index.js",
-    "test": "node --test"
+    "start": "npm run start:api",
+    "test": "node --test",
+    "dev:api": "node --watch server/index.js",
+    "dev:ui": "vite",
+    "start:api": "node server/index.js",
+    "preview": "vite preview",
+    "preview:full": "concurrently -k \"npm run start:api\" \"npm run preview\""
   },
   "dependencies": {
     "express": "^4.21.2",

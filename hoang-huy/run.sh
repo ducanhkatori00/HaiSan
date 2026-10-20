@@ -13,5 +13,5 @@ if [ "${1:-}" = dev ]; then
   npm run dev
 else
   npm run build
-  npm start
+  npm run preview:full
 fi

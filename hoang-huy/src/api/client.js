@@ -1,7 +1,7 @@
 // UI always talks to Node.js; database credentials stay on the server.
 const base = (import.meta.env.VITE_API_BASE_URL || '/api').replace(/\/$/, '');
 
-async function request(path, { token, body, method = 'GET' } = {}) {
+export async function request(path, { token, body, method = 'GET' } = {}) {
   let response;
   try {
     response = await fetch(`${base}${path}`, {
@@ -20,12 +20,3 @@ async function request(path, { token, body, method = 'GET' } = {}) {
   if (data === null) throw new Error('Phản hồi từ máy chủ không hợp lệ.');
   return data;
 }
-
-export const api = {
-  products: () => request('/products'),
-  createOrder: body => request('/orders', { method: 'POST', body }),
-  adminProducts: token => request('/admin/products', { token }),
-  adminOrders: token => request('/admin/orders', { token }),
-  updateProduct: (token, id, body) => request(`/admin/products/${encodeURIComponent(id)}`, { method: 'PUT', token, body }),
-  updateOrder: (token, id, body) => request(`/admin/orders/${encodeURIComponent(id)}`, { method: 'PATCH', token, body }),
-};
