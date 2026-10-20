@@ -1,0 +1,4 @@
+import React from 'react';
+import Icon from '../components/Icon.jsx';
+import {Link} from '../router.jsx';
+export default function AboutPage(){return <main className="content-page"><section id="story" className="story"><div className="story-image"><img loading="lazy" src="https://images.unsplash.com/photo-1510130387422-82bed34b37e9?auto=format&fit=crop&w=1000&q=85" alt="Cá tươi được bày trên đá"/><span>MỘT CHÚT BIỂN.<br/>THẬT NHIỀU VỊ NGON.</span></div><div className="story-copy"><p className="eyebrow">CÂU CHUYỆN HOÀNG HUY</p><h2>Bữa ngon bắt đầu<br/>từ điều giản dị.</h2><p>Đó là mùi thơm của tôm vừa nướng, vị ngọt của bát canh cá, hay đĩa mực hấp cả nhà cùng thưởng thức.</p><p>Hoàng Huy dành góc chợ biển này cho những bữa ăn như thế. Từ bữa cơm thường ngày đến buổi sum họp cuối tuần, hãy tìm món hải sản phù hợp với cách nấu của bạn.</p><Link href="/hai-san">Chọn món cho gia đình <Icon name="arrow"/></Link></div></section></main>;}

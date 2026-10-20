@@ -2,6 +2,15 @@
 
 React + Vite → Node.js + Express → Supabase PostgreSQL (Data API).
 
+Ứng dụng không dùng WordPress hoặc PHP. React hiển thị cửa hàng, tìm kiếm,
+lọc sản phẩm, giỏ hàng và quản trị. Tất cả thao tác dữ liệu đi qua API Express
+trong `server/app.js`; `src/api.js` tập trung kết nối và xử lý lỗi cho UI.
+Giao diện dùng tông xanh biển, hỗ trợ màn hình điện thoại và desktop.
+
+`VITE_API_BASE_URL` mặc định là `/api`. Khi phát triển, Vite proxy đường dẫn
+này sang Node.js cổng 3001; khi production, Express phục vụ cả React đã build
+và API trên cùng origin. Nếu dùng reverse proxy, giữ định tuyến `/api` về Node.js.
+
 ## Thiết lập
 
 Yêu cầu Node.js 22 trở lên. Máy hiện tại có Node trong `.runtime/`; có thể chạy `sh run.sh dev`.
@@ -58,3 +67,21 @@ Secret key chỉ dùng trên server, không đặt vào biến `VITE_*`. RLS b�
 Ứng dụng dùng Supabase cho mọi lần đọc/ghi, không tự chuyển về file khi database lỗi. Dữ liệu JSON cũ trong `data/` được giữ nguyên nhưng chưa nhập vào Supabase. `server/admin.js` là bộ lưu file cũ, không còn dùng bởi ứng dụng; test của bộ này sử dụng thư mục tạm.
 
 Các kiểm thử database dùng mock Data API, không yêu cầu khóa thật. Để xác nhận project thật, cấu hình `.env`, chạy schema, khởi động server và gọi `/api/health`, sau đó thử đặt đơn và kiểm tra trong Admin.
+
+## Các trang giao diện
+
+| URL | Trang | File |
+| --- | --- | --- |
+| `/` | Trang chủ | `src/pages/HomePage.jsx` |
+| `/hai-san` | Danh sách, tìm kiếm và lọc sản phẩm | `src/pages/ProductsPage.jsx` |
+| `/gioi-thieu` | Giới thiệu Hoàng Huy | `src/pages/AboutPage.jsx` |
+| `/huong-dan` | Hướng dẫn đặt hàng | `src/pages/GuidePage.jsx` |
+| `/gio-hang` | Giỏ hàng | `src/pages/CartPage.jsx` |
+| `/thanh-toan` | Thông tin giao hàng | `src/pages/CheckoutPage.jsx` |
+| `/admin` | Quản trị sản phẩm và đơn hàng | `src/pages/AdminPage.jsx` |
+
+`src/App.jsx` ánh xạ URL đến trang; `src/router.jsx` xử lý History API,
+Back/Forward và liên kết chuyển trang. `src/components/Layout.jsx` dùng chung
+header, menu và footer. `src/context/ShopContext.jsx` giữ giỏ hàng xuyên suốt
+các trang và lưu vào localStorage. Express đã trả `dist/index.html` cho URL
+giao diện, nên mở trực tiếp hoặc tải lại từng trang vẫn hoạt động.
